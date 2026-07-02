@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { useFetch, PageError, PageLoader } from '../../hooks/useFetch';
 import * as flowdeskApi from '../../services/flowdeskApi';
 import { Badge, Btn, Card, EmptyState, PageHeader } from '../components/shared';
+import { usePermissions } from '../permissions';
 
 export default function RequestsPage() {
+  const { can } = usePermissions();
+  const canCreate = can('createRequest');
   const [page, setPage] = useState(1);
   const limit = 10;
   const { data, loading, error, reload } = useFetch(
@@ -23,7 +26,13 @@ export default function RequestsPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Requests" subtitle="Track submissions and approval progress." actionLabel="Create request" actionTo="/requests/new" actionIcon={Plus} />
+      <PageHeader
+        title="Requests"
+        subtitle="Track submissions and approval progress."
+        actionLabel={canCreate ? 'Create request' : undefined}
+        actionTo={canCreate ? '/requests/new' : undefined}
+        actionIcon={Plus}
+      />
       {items.length === 0 ? (
         <EmptyState title="No requests found" description="Create a new workflow request to start approval routing." />
       ) : (

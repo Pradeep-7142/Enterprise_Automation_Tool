@@ -91,6 +91,10 @@ export function getEmployee(id) {
   return apiGet(`/employees/${id}`);
 }
 
+export function createEmployee(body) {
+  return apiPost('/employees', body);
+}
+
 export function getDepartments() {
   return apiGet('/departments');
 }
@@ -135,6 +139,10 @@ export function getMessages(conversationId) {
 
 export function sendMessage(conversationId, text) {
   return apiPost(`/messages/conversations/${conversationId}`, { text });
+}
+
+export function startDirectConversation(employeeId) {
+  return apiPost(`/messages/conversations/direct/${employeeId}`);
 }
 
 // ─── Files, Audit, Reports, Tasks, Workflows, Search, Admin ─────────────────

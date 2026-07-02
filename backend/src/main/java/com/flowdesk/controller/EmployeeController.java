@@ -1,10 +1,14 @@
 package com.flowdesk.controller;
 
+import com.flowdesk.dto.request.CreateEmployeeRequest;
 import com.flowdesk.dto.response.ApiResponse;
 import com.flowdesk.dto.response.EmployeeDto;
 import com.flowdesk.dto.response.PageResponse;
+import com.flowdesk.security.Permissions;
 import com.flowdesk.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,5 +32,11 @@ public class EmployeeController {
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<EmployeeDto>> get(@PathVariable Integer id) {
         return ResponseEntity.ok(ApiResponse.ok(userService.getEmployee(id)));
+    }
+
+    @PostMapping
+    @PreAuthorize(Permissions.ADMIN)
+    public ResponseEntity<ApiResponse<EmployeeDto>> create(@Valid @RequestBody CreateEmployeeRequest request) {
+        return ResponseEntity.ok(ApiResponse.ok("Member added", userService.createEmployee(request)));
     }
 }

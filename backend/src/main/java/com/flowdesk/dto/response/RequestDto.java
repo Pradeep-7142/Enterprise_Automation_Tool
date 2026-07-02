@@ -12,6 +12,7 @@ import lombok.NoArgsConstructor;
 public class RequestDto {
     private String id;
     private String title;
+    private String description;
     private String dept;
     private String priority;
     private String status;

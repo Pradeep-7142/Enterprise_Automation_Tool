@@ -9,4 +9,5 @@ public interface MessageService {
     List<ConversationDto> listConversations();
     List<ChatMessageDto> getMessages(Integer conversationDisplayId);
     ChatMessageDto sendMessage(Integer conversationDisplayId, SendMessageRequest request);
+    ConversationDto startDirectConversation(Integer targetEmployeeDisplayId);
 }

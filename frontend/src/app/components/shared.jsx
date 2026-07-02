@@ -1,4 +1,5 @@
-import { Link } from 'react-router';
+import { ArrowLeft } from 'lucide-react';
+import { Link, useNavigate } from 'react-router';
 
 export function cn(...values) {
   return values.filter(Boolean).join(' ');
@@ -64,12 +65,31 @@ export function StatCard({ title, value, hint, icon: Icon }) {
   );
 }
 
-export function PageHeader({ title, subtitle, actionLabel, actionTo, actionIcon: Icon }) {
+export function BackButton({ className = '', fallback = -1 }) {
+  const navigate = useNavigate();
+  return (
+    <Btn
+      variant="ghost"
+      className={cn('px-2', className)}
+      onClick={() => navigate(fallback)}
+      aria-label="Go back"
+      title="Go back"
+    >
+      <ArrowLeft size={16} />
+      Back
+    </Btn>
+  );
+}
+
+export function PageHeader({ title, subtitle, actionLabel, actionTo, actionIcon: Icon, back = false }) {
   return (
     <header className="mb-5 flex flex-wrap items-start justify-between gap-3">
-      <div>
-        <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
-        {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+      <div className="flex items-start gap-2">
+        {back ? <BackButton className="mt-0.5" /> : null}
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-slate-100">{title}</h1>
+          {subtitle ? <p className="mt-1 text-sm text-slate-500">{subtitle}</p> : null}
+        </div>
       </div>
       {actionLabel && actionTo ? (
         <Btn as={Link} to={actionTo}>

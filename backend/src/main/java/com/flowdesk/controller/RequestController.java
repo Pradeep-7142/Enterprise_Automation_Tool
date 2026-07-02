@@ -4,9 +4,11 @@ import com.flowdesk.dto.request.*;
 import com.flowdesk.dto.response.ApiResponse;
 import com.flowdesk.dto.response.PageResponse;
 import com.flowdesk.dto.response.RequestDto;
+import com.flowdesk.security.Permissions;
 import com.flowdesk.service.RequestService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -35,27 +37,32 @@ public class RequestController {
     }
 
     @PostMapping
+    @PreAuthorize(Permissions.CONTRIBUTOR)
     public ResponseEntity<ApiResponse<RequestDto>> create(@Valid @RequestBody CreateRequestDto dto) {
         return ResponseEntity.ok(ApiResponse.ok(requestService.create(dto)));
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize(Permissions.REQUEST_EDITOR)
     public ResponseEntity<ApiResponse<RequestDto>> update(@PathVariable String id, @RequestBody UpdateRequestDto dto) {
         return ResponseEntity.ok(ApiResponse.ok(requestService.update(id, dto)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(Permissions.ADMIN)
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable String id) {
         requestService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Request deleted", null));
     }
 
     @PostMapping("/{id}/approve")
+    @PreAuthorize(Permissions.APPROVER)
     public ResponseEntity<ApiResponse<RequestDto>> approve(@PathVariable String id, @RequestBody ApprovalActionRequest action) {
         return ResponseEntity.ok(ApiResponse.ok(requestService.approve(id, action)));
     }
 
     @PostMapping("/{id}/reject")
+    @PreAuthorize(Permissions.APPROVER)
     public ResponseEntity<ApiResponse<RequestDto>> reject(@PathVariable String id, @RequestBody ApprovalActionRequest action) {
         return ResponseEntity.ok(ApiResponse.ok(requestService.reject(id, action)));
     }

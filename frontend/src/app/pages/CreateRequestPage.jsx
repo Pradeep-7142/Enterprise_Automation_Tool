@@ -30,7 +30,7 @@ export default function CreateRequestPage() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Create Request" subtitle="Submit a workflow request for routing and approvals." />
+      <PageHeader back title="Create Request" subtitle="Submit a workflow request for routing and approvals." />
       <Card>
         <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
           <label className="text-sm font-medium md:col-span-2">
@@ -43,11 +43,15 @@ export default function CreateRequestPage() {
           </label>
           <label className="text-sm font-medium">
             Priority
-            <select className="mt-1 w-full rounded-lg border border-slate-300 bg-transparent px-3 py-2 dark:border-slate-700" value={form.priority} onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value }))}>
-              <option value="low">Low</option>
-              <option value="medium">Medium</option>
-              <option value="high">High</option>
-              <option value="critical">Critical</option>
+            <select
+              className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+              value={form.priority}
+              onChange={(e) => setForm((prev) => ({ ...prev, priority: e.target.value }))}
+            >
+              <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="low">Low</option>
+              <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="medium">Medium</option>
+              <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="high">High</option>
+              <option className="bg-white text-slate-900 dark:bg-slate-800 dark:text-slate-100" value="critical">Critical</option>
             </select>
           </label>
           <label className="text-sm font-medium">

@@ -2,8 +2,10 @@ package com.flowdesk.controller;
 
 import com.flowdesk.dto.response.ApiResponse;
 import com.flowdesk.dto.response.FileDto;
+import com.flowdesk.security.Permissions;
 import com.flowdesk.service.FileService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -29,12 +31,14 @@ public class FileController {
     }
 
     @PostMapping("/upload")
+    @PreAuthorize(Permissions.CONTRIBUTOR)
     public ResponseEntity<ApiResponse<FileDto>> upload(@RequestParam("file") MultipartFile file,
                                                        @RequestParam(required = false) Integer parentId) {
         return ResponseEntity.ok(ApiResponse.ok(fileService.upload(file, parentId)));
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize(Permissions.FILE_REMOVER)
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         fileService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("File deleted", null));

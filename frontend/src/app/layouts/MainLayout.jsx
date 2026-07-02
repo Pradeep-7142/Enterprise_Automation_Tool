@@ -1,8 +1,9 @@
-import { Bell, Building2, CalendarDays, FileArchive, FileText, GitBranch, HelpCircle, Home, LayoutDashboard, LogOut, Menu, MessageSquare, Moon, Settings, Shield, Sun, User, Users, Workflow } from 'lucide-react';
+import { ArrowLeft, Bell, Building2, CalendarDays, FileArchive, FileText, GitBranch, HelpCircle, Home, LayoutDashboard, LogOut, Menu, MessageSquare, Moon, Settings, Shield, Sun, User, Users, Workflow } from 'lucide-react';
 import { useState } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router';
 import { Avatar, Btn, cn } from '../components/shared';
 import { useApp } from '../context/AppContext';
+import { usePermissions } from '../permissions';
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -16,16 +17,18 @@ const navItems = [
   { to: '/approvals', label: 'Approvals', icon: Shield },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/files', label: 'Files', icon: FileArchive },
-  { to: '/audit-logs', label: 'Audit Logs', icon: GitBranch },
+  { to: '/audit-logs', label: 'Audit Logs', icon: GitBranch, permission: 'viewAuditLogs' },
   { to: '/calendar', label: 'Calendar', icon: CalendarDays },
   { to: '/reports', label: 'Reports', icon: FileText },
   { to: '/settings', label: 'Settings', icon: Settings },
-  { to: '/admin', label: 'Admin', icon: Shield },
+  { to: '/admin', label: 'Admin', icon: Shield, permission: 'viewAdmin' },
   { to: '/profile', label: 'Profile', icon: User },
   { to: '/help', label: 'Help', icon: HelpCircle },
 ];
 
 function Sidebar({ onNavigate }) {
+  const { can } = usePermissions();
+  const visibleItems = navItems.filter((item) => !item.permission || can(item.permission));
   return (
     <aside className="flex h-full w-72 flex-col border-r border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-950">
       <div className="border-b border-slate-200 p-4 dark:border-slate-800">
@@ -33,7 +36,7 @@ function Sidebar({ onNavigate }) {
         <p className="text-xs text-slate-500">Enterprise Workflow Automation</p>
       </div>
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
-        {navItems.map(({ to, label, icon: Icon }) => (
+        {visibleItems.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             to={to}
@@ -80,9 +83,14 @@ export default function MainLayout() {
         </div>
         <main className="w-full flex-1">
           <div className="sticky top-0 z-20 flex items-center justify-between border-b border-slate-200 bg-white/95 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/95">
-            <div>
-              <p className="text-sm font-medium">Welcome back</p>
-              <p className="text-xs text-slate-500">{user?.email || 'Team workspace'}</p>
+            <div className="flex items-center gap-3">
+              <Btn variant="ghost" className="px-2" onClick={() => navigate(-1)} aria-label="Go back" title="Go back">
+                <ArrowLeft size={16} />
+              </Btn>
+              <div>
+                <p className="text-sm font-medium">Welcome back</p>
+                <p className="text-xs text-slate-500">{user?.email || 'Team workspace'}</p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               <Btn variant="ghost" onClick={() => setDarkMode((value) => !value)}>

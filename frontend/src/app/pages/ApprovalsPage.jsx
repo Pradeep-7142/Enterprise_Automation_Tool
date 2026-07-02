@@ -2,8 +2,11 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 import { useFetch, PageError, PageLoader } from '../../hooks/useFetch';
 import * as flowdeskApi from '../../services/flowdeskApi';
 import { Badge, Btn, Card, EmptyState, PageHeader } from '../components/shared';
+import { usePermissions } from '../permissions';
 
 export default function ApprovalsPage() {
+  const { can } = usePermissions();
+  const canApprove = can('approveRequests');
   const { data, loading, error, reload } = useFetch(() => flowdeskApi.getPendingApprovals(), [], []);
 
   async function approve(id) {
@@ -23,6 +26,11 @@ export default function ApprovalsPage() {
   return (
     <div className="space-y-5">
       <PageHeader title="Approvals" subtitle="Review and action pending workflow requests." />
+      {!canApprove ? (
+        <Card className="text-sm text-slate-500">
+          You have read-only access to this queue. Approving or rejecting requests is reserved for managers, department heads, finance, HR, and admins.
+        </Card>
+      ) : null}
       {approvals.length === 0 ? (
         <EmptyState title="No pending approvals" description="Approvals queued for your role will appear here." />
       ) : (
@@ -35,14 +43,18 @@ export default function ApprovalsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Badge tone={item.status}>{item.status || 'pending'}</Badge>
-                <Btn onClick={() => approve(item.id)}>
-                  <CheckCircle2 size={15} />
-                  Approve
-                </Btn>
-                <Btn variant="secondary" onClick={() => reject(item.id)}>
-                  <XCircle size={15} />
-                  Reject
-                </Btn>
+                {canApprove ? (
+                  <>
+                    <Btn onClick={() => approve(item.id)}>
+                      <CheckCircle2 size={15} />
+                      Approve
+                    </Btn>
+                    <Btn variant="secondary" onClick={() => reject(item.id)}>
+                      <XCircle size={15} />
+                      Reject
+                    </Btn>
+                  </>
+                ) : null}
               </div>
             </div>
           ))}

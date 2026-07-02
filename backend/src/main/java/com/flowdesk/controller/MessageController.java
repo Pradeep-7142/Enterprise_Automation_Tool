@@ -35,4 +35,9 @@ public class MessageController {
                                                             @Valid @RequestBody SendMessageRequest request) {
         return ResponseEntity.ok(ApiResponse.ok(messageService.sendMessage(id, request)));
     }
+
+    @PostMapping("/conversations/direct/{employeeId}")
+    public ResponseEntity<ApiResponse<ConversationDto>> startDirect(@PathVariable Integer employeeId) {
+        return ResponseEntity.ok(ApiResponse.ok("Conversation ready", messageService.startDirectConversation(employeeId)));
+    }
 }

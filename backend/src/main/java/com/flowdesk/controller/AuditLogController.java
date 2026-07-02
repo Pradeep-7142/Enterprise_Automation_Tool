@@ -3,12 +3,15 @@ package com.flowdesk.controller;
 import com.flowdesk.dto.response.ApiResponse;
 import com.flowdesk.dto.response.AuditLogDto;
 import com.flowdesk.dto.response.PageResponse;
+import com.flowdesk.security.Permissions;
 import com.flowdesk.service.AuditService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/audit-logs")
+@PreAuthorize(Permissions.AUDIT_VIEWER)
 public class AuditLogController {
     private final AuditService auditService;
 

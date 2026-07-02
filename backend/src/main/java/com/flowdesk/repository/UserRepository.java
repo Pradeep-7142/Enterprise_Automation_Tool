@@ -21,4 +21,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     @Query("SELECT u FROM User u WHERE u.deleted = false AND u.organization.id = :orgId AND (LOWER(u.firstName) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.lastName) LIKE LOWER(CONCAT('%', :q, '%')) OR LOWER(u.email) LIKE LOWER(CONCAT('%', :q, '%')))")
     Page<User> search(UUID orgId, String q, Pageable pageable);
     long countByDepartmentIdAndDeletedFalse(UUID departmentId);
+
+    @Query("SELECT COALESCE(MAX(u.displayId), 0) FROM User u")
+    Integer findMaxDisplayId();
 }
