@@ -71,20 +71,33 @@ public class AuthServiceImpl implements AuthService {
         if (userRepository.findByEmailAndDeletedFalse(request.getEmail()).isPresent()) {
             throw new BusinessException("Email already registered", HttpStatus.CONFLICT);
         }
-        Organization org = organizationRepository.findBySlugAndDeletedFalse("acme")
+        
+        String orgName = request.getOrganizationName() != null ? request.getOrganizationName().trim() : "Acme Corp";
+        String slug = orgName.toLowerCase().replaceAll("[^a-z0-9]+", "-").replaceAll("^-|-$", "");
+        if (slug.isEmpty()) {
+            slug = "org-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        
+        final String finalSlug = slug;
+        Organization org = organizationRepository.findBySlugAndDeletedFalse(finalSlug)
                 .orElseGet(() -> {
                     Organization o = new Organization();
-                    o.setName(request.getOrganizationName() != null ? request.getOrganizationName() : "Acme Corp");
-                    o.setSlug("acme");
+                    o.setName(orgName);
+                    o.setSlug(finalSlug);
                     return organizationRepository.save(o);
                 });
-        Role role = roleRepository.findByNameAndDeletedFalse(Enums.SystemRole.EMPLOYEE)
+
+        long userCount = userRepository.countByOrganizationIdAndDeletedFalse(org.getId());
+        Enums.SystemRole systemRole = (userCount == 0) ? Enums.SystemRole.ORG_ADMIN : Enums.SystemRole.EMPLOYEE;
+
+        Role role = roleRepository.findByNameAndDeletedFalse(systemRole)
                 .orElseGet(() -> {
                     Role r = new Role();
-                    r.setName(Enums.SystemRole.EMPLOYEE);
-                    r.setDescription("Employee");
+                    r.setName(systemRole);
+                    r.setDescription(systemRole.name());
                     return roleRepository.save(r);
                 });
+
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
@@ -98,6 +111,7 @@ public class AuthServiceImpl implements AuthService {
         userRepository.save(user);
         return buildAuthResponse(user);
     }
+
 
     @Override
     @Transactional

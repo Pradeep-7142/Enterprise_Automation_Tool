@@ -1,4 +1,4 @@
-import { Edit2, UserCheck, UserMinus, UserPlus, Users, X } from 'lucide-react';
+import { Edit2, Upload, UserCheck, UserMinus, UserPlus, Users, X } from 'lucide-react';
 import { useState } from 'react';
 import { useFetch, PageError, PageLoader } from '../../hooks/useFetch';
 import * as flowdeskApi from '../../services/flowdeskApi';
@@ -160,13 +160,33 @@ export default function EmployeesPage() {
   const [actionBusy, setActionBusy] = useState(false);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
-  const [view, setView] = useState('card'); // 'card' | 'table'
+  const [view, setView] = useState('card');
+  const [importing, setImporting] = useState(false);
+  const [importError, setImportError] = useState('');
 
   const { data, loading, error, reload } = useFetch(
     () => flowdeskApi.getEmployees({ page: 1, limit: 200 }),
     [],
     { items: [] },
   );
+
+  async function handleImport(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImporting(true);
+    setImportError('');
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      await flowdeskApi.importEmployees(fd);
+      reload();
+    } catch (err) {
+      setImportError(err.message || 'Failed to import CSV');
+    } finally {
+      setImporting(false);
+    }
+  }
+
   const deptState = useFetch(() => flowdeskApi.getDepartments(), [], []);
   const departments = deptState.data || [];
 
@@ -202,12 +222,26 @@ export default function EmployeesPage() {
         subtitle="Workforce directory with role, department, and status management."
         actions={
           isAdmin ? (
-            <Btn onClick={() => setShowAdd(true)}>
-              <UserPlus size={15} /> Add member
-            </Btn>
+            <div className="flex gap-2">
+              <label className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold hover:bg-slate-50 dark:border-slate-800 dark:bg-slate-900">
+                <Upload size={14} className="text-slate-500" />
+                <span>{importing ? 'Importing…' : 'Import CSV'}</span>
+                <input type="file" accept=".csv" className="sr-only" onChange={handleImport} disabled={importing} />
+              </label>
+              <Btn onClick={() => setShowAdd(true)}>
+                <UserPlus size={15} /> Add member
+              </Btn>
+            </div>
           ) : null
         }
       />
+
+      {importError ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 dark:border-rose-900/40 dark:bg-rose-900/10 dark:text-rose-400">
+          ⚠️ {importError}
+        </div>
+      ) : null}
+
 
       {/* Summary stats */}
       <div className="grid gap-4 md:grid-cols-3">

@@ -39,4 +39,12 @@ public class EmployeeController {
     public ResponseEntity<ApiResponse<EmployeeDto>> create(@Valid @RequestBody CreateEmployeeRequest request) {
         return ResponseEntity.ok(ApiResponse.ok("Member added", userService.createEmployee(request)));
     }
+
+    @PostMapping("/import")
+    @PreAuthorize(Permissions.ADMIN)
+    public ResponseEntity<ApiResponse<Void>> importEmployees(@RequestParam("file") org.springframework.web.multipart.MultipartFile file) {
+        userService.importEmployees(file);
+        return ResponseEntity.ok(ApiResponse.ok("CSV import completed successfully", null));
+    }
 }
+

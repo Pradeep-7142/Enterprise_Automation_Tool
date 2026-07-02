@@ -20,4 +20,17 @@ public class Organization extends BaseEntity {
 
     @Column(name = "logo_url")
     private String logoUrl;
+
+    @Column(name = "razorpay_customer_id")
+    private String razorpayCustomerId;
+
+    @Column(name = "razorpay_subscription_id")
+    private String razorpaySubscriptionId;
+
+    @Column(name = "subscription_status")
+    private String subscriptionStatus;
+
+    @Column(name = "subscription_tier")
+    private String subscriptionTier;
 }
+

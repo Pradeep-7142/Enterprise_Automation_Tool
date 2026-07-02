@@ -9,4 +9,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, UUID
     Optional<Organization> findBySlugAndDeletedFalse(String slug);
     Optional<Organization> findByNameAndDeletedFalse(String name);
     boolean existsBySlugAndDeletedFalse(String slug);
+    Optional<Organization> findByRazorpaySubscriptionId(String razorpaySubscriptionId);
 }
+

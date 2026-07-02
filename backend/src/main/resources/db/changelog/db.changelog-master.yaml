@@ -6,3 +6,19 @@ databaseChangeLog:
         - sqlFile:
             path: db/changelog/001-schema.sql
             relativeToChangelogFile: false
+  - changeSet:
+      id: 002-stripe-schema
+      author: flowdesk
+      changes:
+        - sqlFile:
+            path: db/changelog/002-stripe-schema.sql
+            relativeToChangelogFile: false
+  - changeSet:
+      id: 003-razorpay-schema
+      author: flowdesk
+      changes:
+        - sqlFile:
+            path: db/changelog/003-razorpay-schema.sql
+            relativeToChangelogFile: false
+
+

@@ -60,6 +60,13 @@ flowdesk:
     secret-key: ${MINIO_SECRET_KEY:minioadmin}
     bucket: ${MINIO_BUCKET:flowdesk-files}
   seed-data: ${SEED_DATA:true}
+  razorpay:
+    key-id: ${RAZORPAY_KEY_ID:rzp_test_mock}
+    key-secret: ${RAZORPAY_KEY_SECRET:secret_mock}
+    webhook-secret: ${RAZORPAY_WEBHOOK_SECRET:whsec_mock}
+    plan-growth: ${RAZORPAY_PLAN_GROWTH:plan_growth_mock}
+    plan-enterprise: ${RAZORPAY_PLAN_ENTERPRISE:plan_enterprise_mock}
+
 
 springdoc:
   api-docs:

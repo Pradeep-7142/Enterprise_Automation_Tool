@@ -10,4 +10,5 @@ public interface UserService {
     EmployeeDto getEmployee(Integer displayId);
     EmployeeDto getEmployeeById(UUID id);
     EmployeeDto createEmployee(CreateEmployeeRequest request);
+    void importEmployees(org.springframework.web.multipart.MultipartFile file);
 }

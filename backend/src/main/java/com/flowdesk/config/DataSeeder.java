@@ -78,6 +78,7 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
+        seedRolesIfMissing();
         if (!properties.isSeedData()) {
             return;
         }
@@ -87,7 +88,7 @@ public class DataSeeder implements CommandLineRunner {
         }
         log.info("Seeding FlowDesk demo data...");
         Organization org = seedOrganization();
-        Map<Enums.SystemRole, Role> roles = seedRoles();
+        Map<Enums.SystemRole, Role> roles = getSystemRolesMap();
         Map<String, Department> departments = seedDepartments(org);
         Map<String, User> users = seedUsers(org, roles, departments);
         linkDepartmentHeads(departments, users);
@@ -101,6 +102,25 @@ public class DataSeeder implements CommandLineRunner {
         log.info("Seed data complete. Default login: alex@acme.com / password123");
     }
 
+    private void seedRolesIfMissing() {
+        for (Enums.SystemRole sr : Enums.SystemRole.values()) {
+            if (roleRepository.findByNameAndDeletedFalse(sr).isEmpty()) {
+                Role role = new Role();
+                role.setName(sr);
+                role.setDescription(sr.name());
+                roleRepository.save(role);
+            }
+        }
+    }
+
+    private Map<Enums.SystemRole, Role> getSystemRolesMap() {
+        Map<Enums.SystemRole, Role> roles = new EnumMap<>(Enums.SystemRole.class);
+        for (Enums.SystemRole sr : Enums.SystemRole.values()) {
+            roleRepository.findByNameAndDeletedFalse(sr).ifPresent(r -> roles.put(sr, r));
+        }
+        return roles;
+    }
+
     private Organization seedOrganization() {
         Organization org = new Organization();
         org.setName("Acme Corp");
@@ -109,18 +129,7 @@ public class DataSeeder implements CommandLineRunner {
         return organizationRepository.save(org);
     }
 
-    private Map<Enums.SystemRole, Role> seedRoles() {
-        Map<Enums.SystemRole, Role> roles = new EnumMap<>(Enums.SystemRole.class);
-        for (Enums.SystemRole sr : List.of(
-                Enums.SystemRole.ORG_ADMIN, Enums.SystemRole.MANAGER, Enums.SystemRole.EMPLOYEE,
-                Enums.SystemRole.DEPARTMENT_HEAD, Enums.SystemRole.FINANCE, Enums.SystemRole.HR)) {
-            Role role = new Role();
-            role.setName(sr);
-            role.setDescription(sr.name());
-            roles.put(sr, roleRepository.save(role));
-        }
-        return roles;
-    }
+
 
     private Map<String, Department> seedDepartments(Organization org) {
         String[][] data = {

@@ -111,6 +111,11 @@ export function createEmployee(body) {
   return apiPost('/employees', body);
 }
 
+export function importEmployees(formData) {
+  return apiPost('/employees/import', formData);
+}
+
+
 export function updateEmployee(id, body) {
   return apiPatch(`/employees/${id}`, body);
 }

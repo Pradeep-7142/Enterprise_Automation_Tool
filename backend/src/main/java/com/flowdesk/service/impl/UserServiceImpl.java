@@ -119,9 +119,111 @@ public class UserServiceImpl implements UserService {
         return employeeMapper.toDto(userRepository.save(user));
     }
 
+    @Override
+    @Transactional
+    public void importEmployees(org.springframework.web.multipart.MultipartFile file) {
+        User current = requireUser();
+        Enums.SystemRole currentRole = current.getRole() != null ? current.getRole().getName() : null;
+        if (currentRole != Enums.SystemRole.ORG_ADMIN && currentRole != Enums.SystemRole.SUPER_ADMIN) {
+            throw new BusinessException("Only administrators can import members", HttpStatus.FORBIDDEN);
+        }
+        try (java.io.BufferedReader reader = new java.io.BufferedReader(
+                new java.io.InputStreamReader(file.getInputStream(), java.nio.charset.StandardCharsets.UTF_8))) {
+            String headerLine = reader.readLine();
+            if (headerLine == null) {
+                throw new BusinessException("Empty CSV file", HttpStatus.BAD_REQUEST);
+            }
+            String[] headers = headerLine.split(",");
+            int emailIdx = -1, firstIdx = -1, lastIdx = -1, titleIdx = -1, deptIdx = -1, roleIdx = -1;
+            for (int i = 0; i < headers.length; i++) {
+                String h = headers[i].trim().toLowerCase();
+                if (h.contains("email")) emailIdx = i;
+                else if (h.contains("first")) firstIdx = i;
+                else if (h.contains("last")) lastIdx = i;
+                else if (h.contains("title") || h.contains("job")) titleIdx = i;
+                else if (h.contains("dept") || h.contains("department")) deptIdx = i;
+                else if (h.contains("role")) roleIdx = i;
+            }
+            if (emailIdx == -1 || firstIdx == -1 || lastIdx == -1) {
+                throw new BusinessException("CSV must contain Email, First Name, and Last Name columns", HttpStatus.BAD_REQUEST);
+            }
+
+            String line;
+            int maxId = userRepository.findMaxDisplayId();
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+                String[] values = line.split(",");
+                if (values.length <= Math.max(emailIdx, Math.max(firstIdx, lastIdx))) continue;
+
+                String email = values[emailIdx].trim();
+                if (userRepository.findByEmailAndDeletedFalse(email).isPresent()) {
+                    continue; 
+                }
+                String first = values[firstIdx].trim();
+                String last = values[lastIdx].trim();
+                String title = titleIdx != -1 && values.length > titleIdx ? values[titleIdx].trim() : "Employee";
+                String deptName = deptIdx != -1 && values.length > deptIdx ? values[deptIdx].trim() : "";
+                String roleStr = roleIdx != -1 && values.length > roleIdx ? values[roleIdx].trim() : "EMPLOYEE";
+
+                Enums.SystemRole parsedRole = Enums.SystemRole.EMPLOYEE;
+                try {
+                    parsedRole = Enums.SystemRole.valueOf(roleStr.toUpperCase());
+                } catch (Exception ignored) {}
+
+                final Enums.SystemRole roleName = parsedRole;
+                Role role = roleRepository.findByNameAndDeletedFalse(roleName)
+                        .orElseGet(() -> {
+                            Role r = new Role();
+                            r.setName(roleName);
+                            r.setDescription(roleName.name());
+                            return roleRepository.save(r);
+                        });
+
+                User user = new User();
+                user.setOrganization(current.getOrganization());
+                user.setEmail(email);
+                user.setPassword(passwordEncoder.encode("WelcomePassword123!"));
+                user.setFirstName(first);
+                user.setLastName(last);
+                user.setJobTitle(title);
+                user.setRole(role);
+                user.setStatus(Enums.PresenceStatus.offline);
+                user.setJoinDate(LocalDate.now());
+                user.setEmailVerified(false);
+                user.setActive(true);
+                user.setDisplayId(++maxId);
+                String initials = ("" + first.charAt(0) + last.charAt(0)).toUpperCase();
+                user.setAvatar(initials);
+
+                if (StringUtils.hasText(deptName)) {
+                    com.flowdesk.entity.Department dept = departmentRepository
+                            .findByNameAndOrganizationIdAndDeletedFalse(deptName, current.getOrganization().getId())
+                            .orElseGet(() -> {
+                                com.flowdesk.entity.Department d = new com.flowdesk.entity.Department();
+                                d.setName(deptName);
+                                d.setOrganization(current.getOrganization());
+                                d.setBudget("$0");
+                                d.setMembers(0);
+                                d.setRequestCount(0);
+                                d.setPerformance(100);
+                                d.setColor("#2563eb");
+                                return departmentRepository.save(d);
+                            });
+                    dept.setMembers(dept.getMembers() + 1);
+                    departmentRepository.save(dept);
+                    user.setDepartment(dept);
+                }
+                userRepository.save(user);
+            }
+        } catch (java.io.IOException e) {
+            throw new BusinessException("Failed to read CSV file", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
     private User requireUser() {
         User user = SecurityUtils.getCurrentUser();
         if (user == null) throw new BusinessException("Not authenticated", HttpStatus.UNAUTHORIZED);
         return user;
     }
 }
+
