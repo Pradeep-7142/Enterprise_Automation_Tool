@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-schema
+      author: flowdesk
+      changes:
+        - sqlFile:
+            path: db/changelog/001-schema.sql
+            relativeToChangelogFile: false
