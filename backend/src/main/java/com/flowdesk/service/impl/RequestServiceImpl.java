@@ -6,7 +6,6 @@ import com.flowdesk.dto.request.CreateRequestDto;
 import com.flowdesk.dto.request.UpdateRequestDto;
 import com.flowdesk.dto.response.PageResponse;
 import com.flowdesk.dto.response.RequestDto;
-import com.flowdesk.entity.Department;
 import com.flowdesk.entity.User;
 import com.flowdesk.entity.WorkflowRequest;
 import com.flowdesk.exception.BusinessException;
@@ -39,10 +38,10 @@ public class RequestServiceImpl implements RequestService {
     private final AuditService auditService;
 
     public RequestServiceImpl(WorkflowRequestRepository requestRepository,
-                              DepartmentRepository departmentRepository,
-                              UserRepository userRepository,
-                              RequestMapper requestMapper,
-                              AuditService auditService) {
+            DepartmentRepository departmentRepository,
+            UserRepository userRepository,
+            RequestMapper requestMapper,
+            AuditService auditService) {
         this.requestRepository = requestRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
@@ -91,7 +90,8 @@ public class RequestServiceImpl implements RequestService {
         request.setDescription(dto.getDescription());
         request.setCurrentStep("Submitted");
         if (StringUtils.hasText(dto.getDept())) {
-            departmentRepository.findByNameAndOrganizationIdAndDeletedFalse(dto.getDept(), current.getOrganization().getId())
+            departmentRepository
+                    .findByNameAndOrganizationIdAndDeletedFalse(dto.getDept(), current.getOrganization().getId())
                     .ifPresent(request::setDepartment);
         }
         if (StringUtils.hasText(dto.getAssigneeEmail())) {
@@ -109,12 +109,18 @@ public class RequestServiceImpl implements RequestService {
     @Transactional
     public RequestDto update(String requestNumber, UpdateRequestDto dto) {
         WorkflowRequest request = findRequest(requestNumber);
-        if (StringUtils.hasText(dto.getTitle())) request.setTitle(dto.getTitle());
-        if (StringUtils.hasText(dto.getPriority())) request.setPriority(parsePriority(dto.getPriority()));
-        if (StringUtils.hasText(dto.getStatus())) request.setStatus(Enums.RequestStatus.valueOf(dto.getStatus()));
-        if (StringUtils.hasText(dto.getCategory())) request.setCategory(dto.getCategory());
-        if (StringUtils.hasText(dto.getDescription())) request.setDescription(dto.getDescription());
-        if (StringUtils.hasText(dto.getStep())) request.setCurrentStep(dto.getStep());
+        if (StringUtils.hasText(dto.getTitle()))
+            request.setTitle(dto.getTitle());
+        if (StringUtils.hasText(dto.getPriority()))
+            request.setPriority(parsePriority(dto.getPriority()));
+        if (StringUtils.hasText(dto.getStatus()))
+            request.setStatus(Enums.RequestStatus.valueOf(dto.getStatus()));
+        if (StringUtils.hasText(dto.getCategory()))
+            request.setCategory(dto.getCategory());
+        if (StringUtils.hasText(dto.getDescription()))
+            request.setDescription(dto.getDescription());
+        if (StringUtils.hasText(dto.getStep()))
+            request.setCurrentStep(dto.getStep());
         if (StringUtils.hasText(dto.getDept())) {
             departmentRepository.findByNameAndOrganizationIdAndDeletedFalse(dto.getDept(),
                     request.getOrganization().getId()).ifPresent(request::setDepartment);
@@ -138,7 +144,8 @@ public class RequestServiceImpl implements RequestService {
         request.setCurrentStep("Completed");
         User current = requireUser();
         auditService.log(current.getFullName(), "Approved", requestNumber,
-                action.getComment() != null ? action.getComment() : "Request approved", null, Enums.AuditLogType.approval);
+                action.getComment() != null ? action.getComment() : "Request approved", null,
+                Enums.AuditLogType.approval);
         return requestMapper.toDto(requestRepository.save(request));
     }
 
@@ -150,7 +157,8 @@ public class RequestServiceImpl implements RequestService {
         request.setCurrentStep("Rejected");
         User current = requireUser();
         auditService.log(current.getFullName(), "Rejected", requestNumber,
-                action.getComment() != null ? action.getComment() : "Request rejected", null, Enums.AuditLogType.rejection);
+                action.getComment() != null ? action.getComment() : "Request rejected", null,
+                Enums.AuditLogType.rejection);
         return requestMapper.toDto(requestRepository.save(request));
     }
 
@@ -158,7 +166,8 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestDto> getRecent(int limit) {
         User current = requireUser();
         return requestMapper.toDtoList(
-                requestRepository.findTop6ByOrganizationIdAndDeletedFalseOrderByUpdatedAtDesc(current.getOrganization().getId())
+                requestRepository
+                        .findTop6ByOrganizationIdAndDeletedFalseOrderByUpdatedAtDesc(current.getOrganization().getId())
                         .stream().limit(limit).toList());
     }
 
@@ -168,7 +177,8 @@ public class RequestServiceImpl implements RequestService {
         Page<WorkflowRequest> page = requestRepository.findByAssigneeIdAndDeletedFalse(
                 current.getId(), PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt")));
         return requestMapper.toDtoList(page.getContent().stream()
-                .filter(r -> r.getStatus() == Enums.RequestStatus.pending || r.getStatus() == Enums.RequestStatus.in_review)
+                .filter(r -> r.getStatus() == Enums.RequestStatus.pending
+                        || r.getStatus() == Enums.RequestStatus.in_review)
                 .toList());
     }
 
@@ -186,7 +196,8 @@ public class RequestServiceImpl implements RequestService {
     }
 
     private Enums.Priority parsePriority(String priority) {
-        if (!StringUtils.hasText(priority)) return Enums.Priority.medium;
+        if (!StringUtils.hasText(priority))
+            return Enums.Priority.medium;
         return Enums.Priority.valueOf(priority);
     }
 

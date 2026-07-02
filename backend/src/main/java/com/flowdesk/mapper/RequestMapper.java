@@ -2,7 +2,6 @@ package com.flowdesk.mapper;
 
 import com.flowdesk.dto.response.RequestDto;
 import com.flowdesk.entity.WorkflowRequest;
-import com.flowdesk.util.DateTimeUtil;
 import org.mapstruct.*;
 
 import java.util.List;

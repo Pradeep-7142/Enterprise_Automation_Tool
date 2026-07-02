@@ -1,6 +1,5 @@
 package com.flowdesk.service.impl;
 
-import com.flowdesk.config.FlowDeskProperties;
 import com.flowdesk.constant.Enums;
 import com.flowdesk.dto.request.*;
 import com.flowdesk.dto.response.AuthLoginResponse;
@@ -37,14 +36,14 @@ public class AuthServiceImpl implements AuthService {
     private final UserProfileMapper userProfileMapper;
 
     public AuthServiceImpl(AuthenticationManager authenticationManager,
-                           UserRepository userRepository,
-                           OrganizationRepository organizationRepository,
-                           RoleRepository roleRepository,
-                           RefreshTokenRepository refreshTokenRepository,
-                           OtpTokenRepository otpTokenRepository,
-                           PasswordEncoder passwordEncoder,
-                           JwtService jwtService,
-                           UserProfileMapper userProfileMapper) {
+            UserRepository userRepository,
+            OrganizationRepository organizationRepository,
+            RoleRepository roleRepository,
+            RefreshTokenRepository refreshTokenRepository,
+            OtpTokenRepository otpTokenRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            UserProfileMapper userProfileMapper) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.organizationRepository = organizationRepository;
