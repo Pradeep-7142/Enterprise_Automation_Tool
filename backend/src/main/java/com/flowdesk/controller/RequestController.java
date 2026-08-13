@@ -72,8 +72,15 @@ public class RequestController {
         return ResponseEntity.ok(ApiResponse.ok(requestService.getRecent(limit)));
     }
 
-    @GetMapping("/pending-approvals")
+    @GetMapping({"/pending-approvals", "/approvals"})
     public ResponseEntity<ApiResponse<List<RequestDto>>> pendingApprovals() {
         return ResponseEntity.ok(ApiResponse.ok(requestService.getPendingApprovals()));
+    }
+
+    @PostMapping("/{id}/comments")
+    public ResponseEntity<ApiResponse<com.flowdesk.dto.response.CommentDto>> addComment(
+            @PathVariable String id,
+            @RequestBody CommentRequest comment) {
+        return ResponseEntity.ok(ApiResponse.ok(requestService.addComment(id, comment)));
     }
 }

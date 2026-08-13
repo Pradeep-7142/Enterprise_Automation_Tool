@@ -13,4 +13,7 @@ public interface DepartmentRepository extends JpaRepository<Department, UUID> {
     Optional<Department> findByNameAndOrganizationIdAndDeletedFalse(String name, UUID organizationId);
     @Query("SELECT d FROM Department d WHERE d.deleted = false AND LOWER(d.name) LIKE LOWER(CONCAT('%', :q, '%'))")
     List<Department> searchByName(String q);
+
+    @Query("SELECT COALESCE(MAX(d.displayId), 0) FROM Department d")
+    int findMaxDisplayId();
 }

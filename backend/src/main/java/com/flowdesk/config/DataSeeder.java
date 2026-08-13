@@ -391,6 +391,13 @@ public class DataSeeder implements CommandLineRunner {
         p1.setOnline(true);
         participantRepository.save(p1);
 
+        ConversationParticipant p2 = new ConversationParticipant();
+        p2.setConversation(c1);
+        p2.setUser(sarah);
+        p2.setUnreadCount(0);
+        p2.setOnline(true);
+        participantRepository.save(p2);
+
         Conversation c2 = new Conversation();
         c2.setDisplayId(2);
         c2.setName("Engineering Team");
@@ -399,7 +406,14 @@ public class DataSeeder implements CommandLineRunner {
         c2.setAvatar("ET");
         c2.setMemberCount(8);
         c2.setOrganization(org);
-        conversationRepository.save(c2);
+        c2 = conversationRepository.save(c2);
+
+        ConversationParticipant p3 = new ConversationParticipant();
+        p3.setConversation(c2);
+        p3.setUser(alex);
+        p3.setUnreadCount(1);
+        p3.setOnline(true);
+        participantRepository.save(p3);
     }
 
     private void seedWorkflowTemplate(Organization org) {

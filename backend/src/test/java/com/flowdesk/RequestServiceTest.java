@@ -37,6 +37,10 @@ class RequestServiceTest {
     @Mock
     private UserRepository userRepository;
     @Mock
+    private com.flowdesk.repository.RequestCommentRepository requestCommentRepository;
+    @Mock
+    private com.flowdesk.repository.ApprovalStepRepository approvalStepRepository;
+    @Mock
     private RequestMapper requestMapper;
     @Mock
     private AuditService auditService;
@@ -48,7 +52,7 @@ class RequestServiceTest {
     @BeforeEach
     void setUp() {
         requestService = new RequestServiceImpl(requestRepository, departmentRepository,
-                userRepository, requestMapper, auditService);
+                userRepository, requestCommentRepository, approvalStepRepository, requestMapper, auditService);
 
         Organization org = new Organization();
         org.setId(UUID.randomUUID());

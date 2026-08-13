@@ -16,6 +16,9 @@ public interface RequestMapper {
     @Mapping(target = "step", source = "currentStep")
     @Mapping(target = "created", expression = "java(com.flowdesk.util.DateTimeUtil.formatDate(entity.getCreatedAt()))")
     @Mapping(target = "updated", expression = "java(com.flowdesk.util.DateTimeUtil.formatDate(entity.getUpdatedAt()))")
+    @Mapping(target = "comments", ignore = true)
+    @Mapping(target = "approvalSteps", ignore = true)
+    @Mapping(target = "attachments", ignore = true)
     RequestDto toDto(WorkflowRequest entity);
 
     List<RequestDto> toDtoList(List<WorkflowRequest> entities);

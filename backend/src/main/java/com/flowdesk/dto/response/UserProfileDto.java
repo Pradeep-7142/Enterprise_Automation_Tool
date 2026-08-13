@@ -13,6 +13,11 @@ public class UserProfileDto {
     private String id;
     private String email;
     private String name;
+    private String firstName;
+    private String lastName;
+    private String jobTitle;
+    private String phone;
+    private String location;
     private String role;
     private String dept;
     private String avatar;

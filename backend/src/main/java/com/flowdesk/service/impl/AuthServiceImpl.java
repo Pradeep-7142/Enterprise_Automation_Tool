@@ -192,6 +192,46 @@ public class AuthServiceImpl implements AuthService {
         return userProfileMapper.toDto(user);
     }
 
+    @Override
+    @Transactional
+    public UserProfileDto updateProfile(UpdateProfileRequest request) {
+        User user = SecurityUtils.getCurrentUser();
+        if (user == null) {
+            throw new BusinessException("Not authenticated", HttpStatus.UNAUTHORIZED);
+        }
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
+        if (request.getFirstName() != null) managedUser.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) managedUser.setLastName(request.getLastName());
+        if (request.getJobTitle() != null) managedUser.setJobTitle(request.getJobTitle());
+        if (request.getPhone() != null) managedUser.setPhone(request.getPhone());
+        if (request.getLocation() != null) managedUser.setLocation(request.getLocation());
+        if (request.getAvatar() != null) managedUser.setAvatar(request.getAvatar());
+        User saved = userRepository.save(managedUser);
+        return userProfileMapper.toDto(saved);
+    }
+
+    @Override
+    @Transactional
+    public void changePassword(ChangePasswordRequest request) {
+        User user = SecurityUtils.getCurrentUser();
+        if (user == null) {
+            throw new BusinessException("Not authenticated", HttpStatus.UNAUTHORIZED);
+        }
+        User managedUser = userRepository.findById(user.getId())
+                .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
+        String currentPass = request.resolveCurrentPassword();
+        String newPass = request.resolveNewPassword();
+        if (!passwordEncoder.matches(currentPass, managedUser.getPassword())) {
+            throw new BusinessException("Current password does not match", HttpStatus.BAD_REQUEST);
+        }
+        if (newPass.length() < 6) {
+            throw new BusinessException("New password must be at least 6 characters", HttpStatus.BAD_REQUEST);
+        }
+        managedUser.setPassword(passwordEncoder.encode(newPass));
+        userRepository.save(managedUser);
+    }
+
     private AuthLoginResponse buildAuthResponse(User user) {
         String accessToken = jwtService.generateAccessToken(user.getEmail(), user.getId());
         String refreshTokenValue = jwtService.generateRefreshToken(user.getEmail(), user.getId());

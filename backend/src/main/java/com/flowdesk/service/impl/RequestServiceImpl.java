@@ -2,16 +2,22 @@ package com.flowdesk.service.impl;
 
 import com.flowdesk.constant.Enums;
 import com.flowdesk.dto.request.ApprovalActionRequest;
+import com.flowdesk.dto.request.CommentRequest;
 import com.flowdesk.dto.request.CreateRequestDto;
 import com.flowdesk.dto.request.UpdateRequestDto;
+import com.flowdesk.dto.response.ApprovalStepDto;
+import com.flowdesk.dto.response.CommentDto;
 import com.flowdesk.dto.response.PageResponse;
 import com.flowdesk.dto.response.RequestDto;
+import com.flowdesk.entity.RequestComment;
 import com.flowdesk.entity.User;
 import com.flowdesk.entity.WorkflowRequest;
 import com.flowdesk.exception.BusinessException;
 import com.flowdesk.exception.ResourceNotFoundException;
 import com.flowdesk.mapper.RequestMapper;
+import com.flowdesk.repository.ApprovalStepRepository;
 import com.flowdesk.repository.DepartmentRepository;
+import com.flowdesk.repository.RequestCommentRepository;
 import com.flowdesk.repository.UserRepository;
 import com.flowdesk.repository.WorkflowRequestRepository;
 import com.flowdesk.service.AuditService;
@@ -34,17 +40,23 @@ public class RequestServiceImpl implements RequestService {
     private final WorkflowRequestRepository requestRepository;
     private final DepartmentRepository departmentRepository;
     private final UserRepository userRepository;
+    private final RequestCommentRepository requestCommentRepository;
+    private final ApprovalStepRepository approvalStepRepository;
     private final RequestMapper requestMapper;
     private final AuditService auditService;
 
     public RequestServiceImpl(WorkflowRequestRepository requestRepository,
             DepartmentRepository departmentRepository,
             UserRepository userRepository,
+            RequestCommentRepository requestCommentRepository,
+            ApprovalStepRepository approvalStepRepository,
             RequestMapper requestMapper,
             AuditService auditService) {
         this.requestRepository = requestRepository;
         this.departmentRepository = departmentRepository;
         this.userRepository = userRepository;
+        this.requestCommentRepository = requestCommentRepository;
+        this.approvalStepRepository = approvalStepRepository;
         this.requestMapper = requestMapper;
         this.auditService = auditService;
     }
@@ -72,7 +84,60 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public RequestDto getByRequestNumber(String requestNumber) {
-        return requestMapper.toDto(findRequest(requestNumber));
+        WorkflowRequest req = findRequest(requestNumber);
+        RequestDto dto = requestMapper.toDto(req);
+
+        List<CommentDto> comments = requestCommentRepository.findByRequestIdAndDeletedFalseOrderByCreatedAtAsc(req.getId())
+                .stream().map(c -> CommentDto.builder()
+                        .id(c.getId())
+                        .author(c.getUser() != null ? c.getUser().getFullName() : "User")
+                        .authorName(c.getUser() != null ? c.getUser().getFullName() : "User")
+                        .text(c.getContent())
+                        .content(c.getContent())
+                        .createdAt(c.getCreatedAt() != null ? c.getCreatedAt().toString() : null)
+                        .build())
+                .toList();
+        dto.setComments(comments);
+
+        List<ApprovalStepDto> steps = approvalStepRepository.findByRequestIdAndDeletedFalseOrderByStepOrderAsc(req.getId())
+                .stream().map(s -> ApprovalStepDto.builder()
+                        .id(s.getId())
+                        .name(s.getStepName())
+                        .label(s.getStepName())
+                        .status(s.getStatus() != null ? s.getStatus().name() : "pending")
+                        .assigneeName(s.getApprover() != null ? s.getApprover().getFullName() : null)
+                        .approver(s.getApprover() != null ? s.getApprover().getFullName() : null)
+                        .comment(s.getComment())
+                        .stepOrder(s.getStepOrder())
+                        .build())
+                .toList();
+        dto.setApprovalSteps(steps);
+
+        return dto;
+    }
+
+    @Override
+    @Transactional
+    public CommentDto addComment(String requestNumber, CommentRequest commentReq) {
+        User current = requireUser();
+        WorkflowRequest req = findRequest(requestNumber);
+        RequestComment comment = new RequestComment();
+        comment.setRequest(req);
+        comment.setUser(current);
+        comment.setContent(commentReq.resolveText());
+        RequestComment saved = requestCommentRepository.save(comment);
+
+        auditService.log(current.getFullName(), "Comment Added", requestNumber,
+                "Added comment: " + commentReq.resolveText(), null, Enums.AuditLogType.comment);
+
+        return CommentDto.builder()
+                .id(saved.getId())
+                .author(current.getFullName())
+                .authorName(current.getFullName())
+                .text(saved.getContent())
+                .content(saved.getContent())
+                .createdAt(saved.getCreatedAt() != null ? saved.getCreatedAt().toString() : java.time.Instant.now().toString())
+                .build();
     }
 
     @Override
@@ -175,11 +240,21 @@ public class RequestServiceImpl implements RequestService {
     public List<RequestDto> getPendingApprovals() {
         User current = requireUser();
         Page<WorkflowRequest> page = requestRepository.findByAssigneeIdAndDeletedFalse(
-                current.getId(), PageRequest.of(0, 20, Sort.by(Sort.Direction.DESC, "updatedAt")));
-        return requestMapper.toDtoList(page.getContent().stream()
+                current.getId(), PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "updatedAt")));
+        List<WorkflowRequest> list = page.getContent().stream()
                 .filter(r -> r.getStatus() == Enums.RequestStatus.pending
                         || r.getStatus() == Enums.RequestStatus.in_review)
-                .toList());
+                .toList();
+        if (list.isEmpty() && current.getRole() != null &&
+                (current.getRole().getName() == Enums.SystemRole.ORG_ADMIN || current.getRole().getName() == Enums.SystemRole.SUPER_ADMIN)) {
+            Page<WorkflowRequest> allPending = requestRepository.findByOrganizationIdAndDeletedFalse(
+                    current.getOrganization().getId(), PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "updatedAt")));
+            list = allPending.getContent().stream()
+                    .filter(r -> r.getStatus() == Enums.RequestStatus.pending
+                            || r.getStatus() == Enums.RequestStatus.in_review)
+                    .toList();
+        }
+        return requestMapper.toDtoList(list);
     }
 
     private WorkflowRequest findRequest(String requestNumber) {

@@ -13,4 +13,6 @@ public interface AuthService {
     void resetPassword(ResetPasswordRequest request);
     void verifyOtp(OtpVerifyRequest request);
     UserProfileDto me();
+    UserProfileDto updateProfile(UpdateProfileRequest request);
+    void changePassword(ChangePasswordRequest request);
 }

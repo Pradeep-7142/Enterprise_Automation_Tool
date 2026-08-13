@@ -121,6 +121,60 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    public EmployeeDto updateEmployee(Integer displayId, java.util.Map<String, Object> updates) {
+        User current = requireUser();
+        User user = userRepository.findByDisplayIdAndDeletedFalse(displayId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        if (updates.containsKey("firstName") && updates.get("firstName") != null) {
+            user.setFirstName(updates.get("firstName").toString());
+        }
+        if (updates.containsKey("lastName") && updates.get("lastName") != null) {
+            user.setLastName(updates.get("lastName").toString());
+        }
+        if (updates.containsKey("jobTitle") && updates.get("jobTitle") != null) {
+            user.setJobTitle(updates.get("jobTitle").toString());
+        }
+        if (updates.containsKey("phone") && updates.get("phone") != null) {
+            user.setPhone(updates.get("phone").toString());
+        }
+        if (updates.containsKey("location") && updates.get("location") != null) {
+            user.setLocation(updates.get("location").toString());
+        }
+        if (updates.containsKey("role") && updates.get("role") != null) {
+            try {
+                Enums.SystemRole roleName = Enums.SystemRole.valueOf(updates.get("role").toString());
+                roleRepository.findByNameAndDeletedFalse(roleName).ifPresent(user::setRole);
+            } catch (Exception ignored) {}
+        }
+        if (updates.containsKey("dept") && updates.get("dept") != null) {
+            String deptName = updates.get("dept").toString();
+            departmentRepository.findByNameAndOrganizationIdAndDeletedFalse(deptName, current.getOrganization().getId())
+                    .ifPresent(user::setDepartment);
+        }
+        return employeeMapper.toDto(userRepository.save(user));
+    }
+
+    @Override
+    @Transactional
+    public void deactivateEmployee(Integer displayId) {
+        User user = userRepository.findByDisplayIdAndDeletedFalse(displayId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        user.setActive(false);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
+    public void activateEmployee(Integer displayId) {
+        User user = userRepository.findByDisplayIdAndDeletedFalse(displayId)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        user.setActive(true);
+        userRepository.save(user);
+    }
+
+    @Override
+    @Transactional
     public void importEmployees(org.springframework.web.multipart.MultipartFile file) {
         User current = requireUser();
         Enums.SystemRole currentRole = current.getRole() != null ? current.getRole().getName() : null;

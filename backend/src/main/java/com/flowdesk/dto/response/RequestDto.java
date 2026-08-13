@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
@@ -21,4 +23,7 @@ public class RequestDto {
     private String created;
     private String updated;
     private String category;
+    private List<CommentDto> comments;
+    private List<ApprovalStepDto> approvalSteps;
+    private List<FileDto> attachments;
 }

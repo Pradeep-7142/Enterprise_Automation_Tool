@@ -36,7 +36,7 @@ public class NotificationController {
         return ResponseEntity.ok(ApiResponse.ok(notificationService.markRead(id)));
     }
 
-    @PostMapping("/read-all")
+    @PostMapping({"/read-all", "/mark-all-read"})
     public ResponseEntity<ApiResponse<Void>> markAllRead() {
         notificationService.markAllRead();
         return ResponseEntity.ok(ApiResponse.ok("All notifications marked read", null));

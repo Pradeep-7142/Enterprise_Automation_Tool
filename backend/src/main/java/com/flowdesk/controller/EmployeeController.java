@@ -46,5 +46,25 @@ public class EmployeeController {
         userService.importEmployees(file);
         return ResponseEntity.ok(ApiResponse.ok("CSV import completed successfully", null));
     }
+
+    @PatchMapping("/{id}")
+    @PreAuthorize(Permissions.ADMIN)
+    public ResponseEntity<ApiResponse<EmployeeDto>> updateEmployee(@PathVariable Integer id, @RequestBody java.util.Map<String, Object> updates) {
+        return ResponseEntity.ok(ApiResponse.ok("Employee updated", userService.updateEmployee(id, updates)));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    @PreAuthorize(Permissions.ADMIN)
+    public ResponseEntity<ApiResponse<Void>> deactivateEmployee(@PathVariable Integer id) {
+        userService.deactivateEmployee(id);
+        return ResponseEntity.ok(ApiResponse.ok("Employee deactivated", null));
+    }
+
+    @PatchMapping("/{id}/activate")
+    @PreAuthorize(Permissions.ADMIN)
+    public ResponseEntity<ApiResponse<Void>> activateEmployee(@PathVariable Integer id) {
+        userService.activateEmployee(id);
+        return ResponseEntity.ok(ApiResponse.ok("Employee activated", null));
+    }
 }
 

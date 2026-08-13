@@ -1,6 +1,7 @@
 package com.flowdesk.service;
 
 import com.flowdesk.dto.request.*;
+import com.flowdesk.dto.response.CommentDto;
 import com.flowdesk.dto.response.PageResponse;
 import com.flowdesk.dto.response.RequestDto;
 import java.util.List;
@@ -15,4 +16,5 @@ public interface RequestService {
     RequestDto reject(String requestNumber, ApprovalActionRequest action);
     List<RequestDto> getRecent(int limit);
     List<RequestDto> getPendingApprovals();
+    CommentDto addComment(String requestNumber, CommentRequest request);
 }
