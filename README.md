@@ -25,15 +25,28 @@ This repository is a monorepo containing:
 ## Quick Start
 
 ### Option 1: Full Stack via Docker (Recommended)
-This runs the full stack including the database, cache, and storage inside containers.
+This runs the entire full stack (Frontend, Backend, PostgreSQL, Redis, MinIO, Prometheus, Grafana) inside containers from the root directory:
+
+```bash
+docker compose up --build
+```
+*Note: Depending on your system configuration, you might need to run this with `sudo docker compose up --build` or add your user to the `docker` group.*
+
+### Option 2: Backend Only via Docker (Run Frontend Locally)
+If you prefer running just the backend and databases in Docker while developing the frontend with hot-reloading:
 
 ```bash
 cd backend
 docker compose up --build
 ```
-*Note: Depending on your system configuration, you might need to run this with `sudo docker compose up --build` or add your user to the `docker` group.*
+And in a separate terminal:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-### Option 2: Local Development (Without Docker)
+### Option 3: Local Development (Without Docker)
 
 **Terminal 1 — Start the Backend:**
 ```bash
