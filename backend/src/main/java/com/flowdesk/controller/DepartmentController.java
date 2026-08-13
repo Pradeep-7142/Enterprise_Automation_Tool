@@ -28,16 +28,19 @@ public class DepartmentController {
     }
 
     @PostMapping
+    @org.springframework.security.access.prepost.PreAuthorize(com.flowdesk.security.Permissions.ADMIN)
     public ResponseEntity<ApiResponse<DepartmentDto>> create(@RequestBody java.util.Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok("Department created", departmentService.create(body)));
     }
 
     @PatchMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize(com.flowdesk.security.Permissions.ADMIN)
     public ResponseEntity<ApiResponse<DepartmentDto>> update(@PathVariable Integer id, @RequestBody java.util.Map<String, Object> body) {
         return ResponseEntity.ok(ApiResponse.ok("Department updated", departmentService.update(id, body)));
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize(com.flowdesk.security.Permissions.ADMIN)
     public ResponseEntity<ApiResponse<Void>> delete(@PathVariable Integer id) {
         departmentService.delete(id);
         return ResponseEntity.ok(ApiResponse.ok("Department deleted", null));
